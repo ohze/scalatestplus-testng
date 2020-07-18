@@ -1,6 +1,6 @@
 name := "testng-6.7"
 
-organization := "org.scalatestplus"
+organization := "com.sandinh"
 
 version := "3.2.0.0"
 
@@ -39,6 +39,16 @@ libraryDependencies ++= Seq(
   "commons-io" % "commons-io" % "1.3.2" % "test", 
   "org.scalatest" %% "scalatest-funsuite" % "3.2.0" % "test"
 )
+libraryDependencies := {
+  val old = libraryDependencies.value
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((0, n)) if n > 24 => old.map {
+      case m if m.organization == "org.scalatest" => m.withOrganization("com.sandinh")
+      case m => m
+    }
+    case _ => old
+  }
+}
 
 import scala.xml.{Node => XmlNode, NodeSeq => XmlNodeSeq, _}
 import scala.xml.transform.{RewriteRule, RuleTransformer}
@@ -85,18 +95,13 @@ OsgiKeys.additionalHeaders:= Map(
   "Bundle-Vendor" -> "Artima, Inc."
 )
 
-publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  Some("publish-releases" at nexus + "service/local/staging/deploy/maven2")
-}
+publishTo := sonatypePublishToBundle.value
 
 publishMavenStyle := true
 
 publishArtifact in Test := false
 
 pomIncludeRepository := { _ => false }
-
-credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
 
 pomExtra := (
   <scm>
